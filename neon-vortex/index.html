@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NEON HYPERDRIVE</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD da corrida -->
+    <div id="hud" hidden>
+      <div class="hud-block hud-tl">
+        <div class="hud-position"><b id="hud-pos">8</b><sup>º</sup><small>/<span id="hud-total">8</span></small></div>
+        <div class="hud-lap">VOLTA <b id="hud-lap">1</b>/<span id="hud-laps">3</span></div>
+      </div>
+
+      <div class="hud-block hud-tc">
+        <div class="hud-time" id="hud-time">0:00.000</div>
+        <div class="hud-subtimes">
+          <span>VOLTA <b id="hud-laptime">0:00.000</b></span>
+          <span>MELHOR <b id="hud-best">-:--.---</b></span>
+        </div>
+      </div>
+
+      <div class="hud-block hud-tr">
+        <canvas id="minimap" width="220" height="220"></canvas>
+      </div>
+
+      <ol class="hud-board" id="hud-board"></ol>
+
+      <div class="hud-block hud-bl">
+        <div class="bar-row">
+          <label>ENERGIA</label>
+          <div class="bar bar-energy" id="hud-energy"><i></i></div>
+        </div>
+        <div class="bar-row">
+          <label>BOOST</label>
+          <div class="bar bar-boost" id="hud-boost"><i></i></div>
+        </div>
+      </div>
+
+      <div class="hud-block hud-br">
+        <div class="hud-boost-ind" id="hud-boost-ind">BOOST PRONTO</div>
+        <div class="hud-speed"><b id="hud-speed">0</b><small>KM/H</small></div>
+      </div>
+
+      <div id="hud-message" class="hud-message"></div>
+      <div id="hud-countdown" class="hud-countdown"></div>
+      <div id="hud-warning" class="hud-warning" hidden>ENERGIA BAIXA</div>
+      <div id="hud-camera" class="hud-camera"></div>
+    </div>
+
+    <!-- Telas -->
+    <div id="screens">
+      <section class="screen" id="screen-title" hidden>
+        <div class="title-wrap">
+          <p class="kicker">LIGA ANTIGRAVIDADE // TEMPORADA 2187</p>
+          <h1 class="logo"><span>NEON</span><span>HYPERDRIVE</span></h1>
+          <nav class="menu">
+            <button data-action="play" data-default>INICIAR CORRIDA</button>
+            <button data-action="help">INSTRUÇÕES</button>
+            <button data-action="options">OPÇÕES</button>
+          </nav>
+          <p class="hint">SETAS / ENTER PARA NAVEGAR</p>
+        </div>
+      </section>
+
+      <section class="screen screen-select" id="screen-ship" hidden>
+        <header><h2>ESCOLHA SUA NAVE</h2></header>
+        <div class="cards" id="ship-cards"></div>
+        <footer class="menu menu-row">
+          <button data-action="back">VOLTAR</button>
+          <button data-action="confirm-ship" data-default>CONFIRMAR</button>
+        </footer>
+      </section>
+
+      <section class="screen screen-select" id="screen-track" hidden>
+        <header><h2>ESCOLHA A PISTA</h2></header>
+        <div class="cards" id="track-cards"></div>
+        <div class="difficulty">
+          <span>DIFICULDADE</span>
+          <div class="segmented" id="difficulty-select">
+            <button data-difficulty="easy">FÁCIL</button>
+            <button data-difficulty="normal">NORMAL</button>
+            <button data-difficulty="hard">DIFÍCIL</button>
+          </div>
+          <p id="difficulty-note"></p>
+        </div>
+        <footer class="menu menu-row">
+          <button data-action="back">VOLTAR</button>
+          <button data-action="start" data-default>LARGAR</button>
+        </footer>
+      </section>
+
+      <section class="screen" id="screen-help" hidden>
+        <div class="panel">
+          <h2>INSTRUÇÕES</h2>
+          <div class="help-grid">
+            <dl class="keys">
+              <div><dt><kbd>W</kbd> <kbd>↑</kbd></dt><dd>Acelerar</dd></div>
+              <div><dt><kbd>S</kbd> <kbd>↓</kbd></dt><dd>Frear / ré</dd></div>
+              <div><dt><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd></dt><dd>Virar</dd></div>
+              <div><dt><kbd>Shift</kbd></dt><dd>Boost</dd></div>
+              <div><dt><kbd>Espaço</kbd></dt><dd>Drift (freio lateral)</dd></div>
+              <div><dt><kbd>R</kbd></dt><dd>Reposicionar na pista</dd></div>
+              <div><dt><kbd>C</kbd></dt><dd>Trocar câmera</dd></div>
+              <div><dt><kbd>P</kbd> <kbd>Esc</kbd></dt><dd>Pausar</dd></div>
+            </dl>
+            <ul class="tips">
+              <li><b class="c-orange">Faixas laranja</b> dão um impulso gratuito.</li>
+              <li><b class="c-blue">Faixas azuis</b> recarregam a energia da nave.</li>
+              <li>A <b>energia</b> é sua vida e também alimenta o boost: colisões fortes e boost prolongado a consomem.</li>
+              <li>Em curvas fechadas, segure <b>Espaço</b> para derrapar e virar mais rápido, ao custo de velocidade.</li>
+              <li>Nos trechos com <b class="c-red">bordas vermelhas</b> não há barreira: sair do acostamento significa cair.</li>
+              <li>São 3 voltas. Passe por todos os checkpoints para a volta contar.</li>
+            </ul>
+          </div>
+          <nav class="menu menu-row"><button data-action="back" data-default>VOLTAR</button></nav>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-options" hidden>
+        <div class="panel">
+          <h2>OPÇÕES</h2>
+          <div class="options">
+            <div class="option">
+              <span>QUALIDADE GRÁFICA</span>
+              <div class="segmented" id="opt-quality">
+                <button data-quality="low">BAIXO</button>
+                <button data-quality="medium">MÉDIO</button>
+                <button data-quality="high">ALTO</button>
+              </div>
+            </div>
+            <div class="option">
+              <span>EFEITO CRT</span>
+              <button class="toggle" id="opt-crt" aria-pressed="true">LIGADO</button>
+            </div>
+            <div class="option">
+              <span>SOMBRAS</span>
+              <button class="toggle" id="opt-shadows" aria-pressed="false">DESLIGADO</button>
+            </div>
+            <div class="option">
+              <label for="opt-master">VOLUME GERAL</label>
+              <input type="range" id="opt-master" min="0" max="1" step="0.05">
+            </div>
+            <div class="option">
+              <label for="opt-sfx">EFEITOS</label>
+              <input type="range" id="opt-sfx" min="0" max="1" step="0.05">
+            </div>
+            <div class="option">
+              <label for="opt-music">MÚSICA</label>
+              <input type="range" id="opt-music" min="0" max="1" step="0.05">
+            </div>
+          </div>
+          <p class="note" id="opt-note"></p>
+          <nav class="menu menu-row"><button data-action="back" data-default>VOLTAR</button></nav>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-pause" hidden>
+        <div class="panel panel-narrow">
+          <h2>PAUSA</h2>
+          <nav class="menu">
+            <button data-action="resume" data-default>CONTINUAR</button>
+            <button data-action="restart">REINICIAR CORRIDA</button>
+            <button data-action="options">OPÇÕES</button>
+            <button data-action="quit">SAIR PARA O MENU</button>
+          </nav>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-results" hidden>
+        <div class="panel panel-wide">
+          <p class="kicker" id="results-track"></p>
+          <h2 id="results-title">RESULTADO</h2>
+          <table class="results">
+            <thead><tr><th>POS</th><th>PILOTO</th><th>NAVE</th><th>TEMPO</th><th>MELHOR VOLTA</th></tr></thead>
+            <tbody id="results-body"></tbody>
+          </table>
+          <nav class="menu menu-row">
+            <button data-action="restart" data-default>CORRER NOVAMENTE</button>
+            <button data-action="change">TROCAR NAVE / PISTA</button>
+            <button data-action="quit">MENU PRINCIPAL</button>
+          </nav>
+        </div>
+      </section>
+    </div>
+
+    <div id="loading">INICIALIZANDO HYPERDRIVE…</div>
+    <div id="fatal" hidden>
+      <h2>FALHA NO SISTEMA</h2>
+      <p></p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var box = document.getElementById('fatal');
+      window.__neonFatal = function (message) {
+        box.hidden = false;
+        box.querySelector('p').textContent = message;
+        document.getElementById('loading').hidden = true;
+      };
+      if (location.protocol === 'file:') {
+        window.__neonFatal('Abra o jogo por um servidor local (veja o README). Módulos ES não carregam via file://.');
+      }
+      window.addEventListener('error', function (e) {
+        if (e.target && e.target.tagName === 'SCRIPT') {
+          window.__neonFatal('Não foi possível carregar ' + e.target.src + '. Verifique a conexão: o Three.js é carregado via CDN.');
+        }
+      }, true);
+      setTimeout(function () {
+        if (!window.__neonBooted && box.hidden) {
+          window.__neonFatal('O jogo não iniciou. Verifique a conexão com a internet (Three.js via CDN) e o console do navegador.');
+        }
+      }, 15000);
+    })();
+  </script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
