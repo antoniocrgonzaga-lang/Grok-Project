@@ -6,7 +6,7 @@ Projetos de jogos do Grok. Cada jogo fica na sua própria pasta.
 
 | Jogo | Jogar online | Pasta |
 |---|---|---|
-| Neon Hyperdrive | [▶ Jogar online](https://antoniocrgonzaga-lang.github.io/Grok-Project/neon-vortex/) | [neon-vortex/](neon-vortex/) |
+| Neon Hyperdrive | [▶ Jogar online](https://antoniocrgonzaga-lang.github.io/Grok-Project/neon-hyperdrive/) | [neon-hyperdrive/](neon-hyperdrive/) |
 
 ## Como testar
 
