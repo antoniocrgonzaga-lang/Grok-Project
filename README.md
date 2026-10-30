@@ -18,6 +18,6 @@ Projetos de jogos do Grok. Cada jogo fica na sua própria pasta.
 ## Como rodar no seu computador
 
 1. Nesta página, clique no botão verde **Code** e depois em **Download ZIP**.
-2. Extraia o ZIP e abra a pasta do jogo (por exemplo `neon-vortex`).
+2. Extraia o ZIP e abra a pasta do jogo (por exemplo `neon-hyperdrive`).
 3. Dê dois cliques em **`start.bat`**. O jogo abre no navegador. Deixe a janela preta aberta enquanto joga.
 4. Precisa ter o [Node.js](https://nodejs.org) ou o [Python](https://www.python.org) instalado.
