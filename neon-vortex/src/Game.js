@@ -14,6 +14,7 @@ import { Effects } from './Effects.js';
 import { AudioManager } from './AudioManager.js';
 import { InputManager } from './InputManager.js';
 import { HUD } from './HUD.js';
+import { t, ordinal } from './i18n.js';
 import { Menus } from './Menus.js';
 
 export const GameState = Object.freeze({
@@ -169,7 +170,7 @@ export class Game {
       const mode = this.cameraCtl.cycleMode();
       this.player.hidden = mode.cockpit;
       this.cameraCtl.snap(this.player);
-      this.hud.cameraLabel(mode.label);
+      this.hud.cameraLabel(t(`camera.${mode.id}`));
       this.audio.play('select');
     } else if (action === 'respawn' && this.state === GameState.RACING) {
       if (this.player.canRespawn() && !this.player.finished) this.player.respawn(false);
@@ -297,7 +298,7 @@ export class Game {
       const j = Math.floor(Math.random() * (i + 1));
       [rivals[i], rivals[j]] = [rivals[j], rivals[i]];
     }
-    const player = new PlayerShip({ ...common, def: this.selectedShip, colors: this.selectedShip.colors, name: 'VOCÊ' });
+    const player = new PlayerShip({ ...common, def: this.selectedShip, colors: this.selectedShip.colors, name: t('race.you') });
     player.autopilotEnabled = this.demoAutopilot;
     player.hidden = this.cameraCtl.mode.cockpit;
 
@@ -330,7 +331,7 @@ export class Game {
     this.menus.hide();
     this.hud.reset(R.laps, this.ships);
     this.hud.show();
-    this.hud.message(track.def.name.toUpperCase(), { sub: `${R.laps} VOLTAS  ·  ${this.difficulty.label}`, duration: R.introSeconds, priority: 1 });
+    this.hud.message(t(`track.${track.def.id}.name`).toUpperCase(), { sub: t('race.intro', { laps: R.laps, difficulty: t(`difficulty.${this.difficultyKey}`) }), duration: R.introSeconds, priority: 1 });
     this.input.clear();
     this.input.captureGameKeys = true;
     this.cameraCtl.snap(player);
@@ -374,7 +375,7 @@ export class Game {
     } catch (err) {
       cancelAnimationFrame(this._raf);
       console.error(err);
-      window.__neonFatal?.(`Erro durante a execução: ${err.message}`);
+      window.__neonFatal?.(t('fatal.runtime', { msg: err.message }));
     }
   }
 
@@ -446,7 +447,7 @@ export class Game {
 
     if (remaining <= 0) {
       this.state = GameState.RACING;
-      this.hud.countdown('GO!');
+      this.hud.countdown(t('race.go'));
       this.audio.play('go');
     }
   }
@@ -585,15 +586,15 @@ export class Game {
 
     if (newRecord) {
       this.audio.play('bestLap');
-      this.hud.message('NOVA MELHOR VOLTA', { kind: 'good', sub: formatTime(ship.lastLap), duration: 1.8, priority: 3 });
+      this.hud.message(t('race.newBest'), { kind: 'good', sub: formatTime(ship.lastLap), duration: 1.8, priority: 3 });
     } else {
       this.audio.play(ship.lap === laps ? 'finalLap' : 'lap');
     }
     // Com recorde, o aviso de volta entra na fila e aparece logo depois.
     if (ship.lap === laps) {
-      this.hud.message('VOLTA FINAL', { kind: 'big', duration: 2.2, priority: 3, queue: newRecord });
+      this.hud.message(t('race.finalLap'), { kind: 'big', duration: 2.2, priority: 3, queue: newRecord });
     } else {
-      this.hud.message(`VOLTA ${ship.lap}/${laps}`, { sub: formatTime(ship.lastLap), duration: 1.6, priority: 2, queue: newRecord });
+      this.hud.message(t('race.lap', { lap: ship.lap, laps }), { sub: formatTime(ship.lastLap), duration: 1.6, priority: 2, queue: newRecord });
     }
   }
 
@@ -605,8 +606,8 @@ export class Game {
     player.autopilot.reset();
     player.autopilot.launchDelay = 0;
     this.audio.play('finish');
-    this.hud.message('CHEGADA!', { kind: 'big', sub: `${player.finishRank}º LUGAR  ·  ${formatTime(player.finishTime)}`, duration: 3, priority: 5 });
-    if (newRecord) this.hud.message('NOVA MELHOR VOLTA', { kind: 'good', sub: formatTime(player.lastLap), duration: 1.8, priority: 5, queue: true });
+    this.hud.message(t('race.finish'), { kind: 'big', sub: t('race.finishSub', { place: ordinal(player.finishRank), time: formatTime(player.finishTime) }), duration: 3, priority: 5 });
+    if (newRecord) this.hud.message(t('race.newBest'), { kind: 'good', sub: formatTime(player.lastLap), duration: 1.8, priority: 5, queue: true });
   }
 
   _rank() {
@@ -649,7 +650,7 @@ export class Game {
     this.hud.hide();
     this.input.captureGameKeys = false;
     this.menus.showResults({
-      trackName: `${track.def.name.toUpperCase()}  ·  DIFICULDADE ${this.difficulty.label}`,
+      trackName: t('results.trackLine', { track: t(`track.${track.def.id}.name`).toUpperCase(), difficulty: t(`difficulty.${this.difficultyKey}`) }),
       playerRank: this.player.rank,
       rows,
     });
@@ -706,7 +707,7 @@ export class Game {
         }
         break;
       case 'fall':
-        if (isPlayer) this.hud.message('FORA DA PISTA', { kind: 'warn', duration: 1.4, priority: 2 });
+        if (isPlayer) this.hud.message(t('race.offTrack'), { kind: 'warn', duration: 1.4, priority: 2 });
         break;
       case 'ko':
         fx.explosion(p.x, p.y, p.z, 2.2, 0.9, 0.2);
@@ -714,7 +715,7 @@ export class Game {
         if (isPlayer) {
           this.cameraCtl.shake(1);
           fx.flash(0.7, 0xff4422);
-          this.hud.message('ENERGIA ESGOTADA', { kind: 'warn', sub: 'REINICIANDO SISTEMAS', duration: 2, priority: 4 });
+          this.hud.message(t('race.energyDepleted'), { kind: 'warn', sub: t('race.rebooting'), duration: 2, priority: 4 });
         }
         break;
       case 'respawn':

@@ -1,6 +1,8 @@
 import { Game } from './Game.js';
+import { t, applyTranslations } from './i18n.js';
 
 function boot() {
+  applyTranslations();
   const root = document.getElementById('app');
   const params = new URLSearchParams(location.search);
   try {
@@ -12,7 +14,7 @@ function boot() {
     document.getElementById('loading').hidden = true;
   } catch (err) {
     console.error(err);
-    window.__neonFatal?.(`Não foi possível iniciar o jogo: ${err.message}. Verifique se o navegador tem WebGL 2 habilitado.`);
+    window.__neonFatal?.(t('fatal.boot', { msg: err.message }));
   }
 }
 

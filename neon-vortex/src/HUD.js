@@ -1,4 +1,5 @@
 import { CONFIG } from './Config.js';
+import { t, ordinalSuffix } from './i18n.js';
 import { clamp, formatTime, cssColor } from './Utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -9,6 +10,7 @@ export class HUD {
     this.root = $('hud');
     this.el = {
       pos: $('hud-pos'),
+      posSuffix: $('hud-pos-suffix'),
       total: $('hud-total'),
       lap: $('hud-lap'),
       laps: $('hud-laps'),
@@ -185,6 +187,7 @@ export class HUD {
 
     this._set('speed', String(Math.round(Math.abs(player.v) * CONFIG.hud.speedFactor)));
     this._set('pos', String(player.rank));
+    this._set('posSuffix', ordinalSuffix(player.rank));
     this._set('lap', String(clamp(player.lap, 1, totalLaps)));
     const shownTime = player.finished ? player.finishTime : raceTime;
     this._set('time', formatTime(shownTime));
@@ -215,7 +218,7 @@ export class HUD {
     this._toggle(this.el.boost, 'active', active);
     this._toggle(this.el.boostInd, 'active', active);
     this._toggle(this.el.boostInd, 'ready', ready);
-    this._set('boostInd', active ? 'BOOST ATIVO' : ready ? 'BOOST PRONTO' : 'RECARREGANDO');
+    this._set('boostInd', t(active ? 'hud.boostActive' : ready ? 'hud.boostReady' : 'hud.recharging'));
 
     this.boardTimer -= dt;
     if (this.boardTimer <= 0) {

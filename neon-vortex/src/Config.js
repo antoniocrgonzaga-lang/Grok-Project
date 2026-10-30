@@ -123,9 +123,9 @@ export const CONFIG = {
     fovSpeed: 12,
     fovBoost: 13,
     modes: [
-      { id: 'near', label: 'CÂMERA PRÓXIMA', distance: 9.5, height: 3.3, fov: 68, dirRate: 6, anticipation: 0.3, boostPull: 2.4, speedPull: 1.4, roll: 0.07, cockpit: false },
-      { id: 'far', label: 'CÂMERA DISTANTE', distance: 15, height: 6, fov: 64, dirRate: 4.5, anticipation: 0.35, boostPull: 3.2, speedPull: 2, roll: 0.05, cockpit: false },
-      { id: 'cockpit', label: 'CÂMERA COCKPIT', distance: 0, height: 1.15, forward: 1.4, fov: 78, dirRate: 14, anticipation: 0.2, boostPull: 0, speedPull: 0, roll: 0.12, cockpit: true },
+      { id: 'near', label: 'NEAR CAMERA', distance: 9.5, height: 3.3, fov: 68, dirRate: 6, anticipation: 0.3, boostPull: 2.4, speedPull: 1.4, roll: 0.07, cockpit: false },
+      { id: 'far', label: 'FAR CAMERA', distance: 15, height: 6, fov: 64, dirRate: 4.5, anticipation: 0.35, boostPull: 3.2, speedPull: 2, roll: 0.05, cockpit: false },
+      { id: 'cockpit', label: 'COCKPIT CAMERA', distance: 0, height: 1.15, forward: 1.4, fov: 78, dirRate: 14, anticipation: 0.2, boostPull: 0, speedPull: 0, roll: 0.12, cockpit: true },
     ],
   },
 
@@ -151,7 +151,7 @@ export const SHIPS = [
   {
     id: 'falcon',
     name: 'Vortex Falcon',
-    tagline: 'Equilibrada. Responde bem em qualquer circuito.',
+    tagline: 'Balanced. Handles well on any circuit.',
     stats: { maxSpeed: 128, accel: 48, turnRate: 1.25, grip: 6.5, energy: 100, boostMult: 1.3, boostAccel: 72 },
     ratings: { speed: 4, accel: 4, handling: 4, energy: 3, boost: 3 },
     colors: { primary: 0xff2bd6, accent: 0x00e5ff, engine: 0x00e5ff },
@@ -160,7 +160,7 @@ export const SHIPS = [
   {
     id: 'spear',
     name: 'Crimson Spear',
-    tagline: 'Velocidade máxima brutal, mas exige mãos firmes.',
+    tagline: 'Brutal top speed, but demands steady hands.',
     stats: { maxSpeed: 137, accel: 46, turnRate: 1.08, grip: 5.4, energy: 90, boostMult: 1.28, boostAccel: 70 },
     ratings: { speed: 5, accel: 4, handling: 2, energy: 2, boost: 3 },
     colors: { primary: 0xff2244, accent: 0xff9a1f, engine: 0xff7a00 },
@@ -169,7 +169,7 @@ export const SHIPS = [
   {
     id: 'warden',
     name: 'Ion Warden',
-    tagline: 'Blindagem pesada e boost longo. Arranca devagar.',
+    tagline: 'Heavy armor and long boost. Slow off the line.',
     stats: { maxSpeed: 125, accel: 40, turnRate: 1.22, grip: 7.2, energy: 140, boostMult: 1.36, boostAccel: 66 },
     ratings: { speed: 3, accel: 2, handling: 4, energy: 5, boost: 5 },
     colors: { primary: 0x2a6cff, accent: 0xb46bff, engine: 0x00e5ff },
@@ -186,9 +186,9 @@ export const SHIPS = [
 //   boost       multiplica a disposição para usar boost
 //   catchUp / slowDown  rubber banding: ajuda a quem está muito atrás / freio em quem disparou na frente
 export const DIFFICULTY = {
-  easy: { label: 'FÁCIL', speed: 0.9, corner: 0.76, cornerNoise: 0.16, skill: -0.22, errors: 2.4, boost: 0.35, catchUp: 0.015, slowDown: 0.08 },
+  easy: { label: 'EASY', speed: 0.9, corner: 0.76, cornerNoise: 0.16, skill: -0.22, errors: 2.4, boost: 0.35, catchUp: 0.015, slowDown: 0.08 },
   normal: { label: 'NORMAL', speed: 0.95, corner: 0.87, cornerNoise: 0.1, skill: -0.1, errors: 1.6, boost: 0.65, catchUp: 0.03, slowDown: 0.06 },
-  hard: { label: 'DIFÍCIL', speed: 1, corner: 1, cornerNoise: 0.02, skill: 0, errors: 1, boost: 1, catchUp: 0.04, slowDown: 0.04 },
+  hard: { label: 'HARD', speed: 1, corner: 1, cornerNoise: 0.02, skill: 0, errors: 1, boost: 1, catchUp: 0.04, slowDown: 0.04 },
 };
 
 // Pilotos controlados por IA. skill e speedBias definem a força relativa de cada um.
@@ -208,7 +208,7 @@ export const TRACKS = [
   {
     id: 'aurora',
     name: 'Aurora Skyway',
-    description: 'Circuito suspenso sobre a metrópole. Curvas largas, um túnel longo e um grampo traiçoeiro.',
+    description: 'Suspended circuit above the metropolis. Wide corners, a long tunnel and a treacherous hairpin.',
     difficulty: 2,
     scale: 1.25,
     points: [
@@ -236,8 +236,8 @@ export const TRACKS = [
   },
   {
     id: 'crimson',
-    name: 'Abismo Carmesim',
-    description: 'Traçado técnico sobre o vazio. Menos barreiras, mais trechos expostos e curvas em sequência.',
+    name: 'Crimson Abyss',
+    description: 'Technical layout over the void. Fewer barriers, more exposed sections and corner sequences.',
     difficulty: 3,
     scale: 1.2,
     points: [
@@ -264,8 +264,8 @@ export const TRACKS = [
   },
   {
     id: 'carnival',
-    name: 'Carnaval Lunar',
-    description: 'Corrida noturna à beira de um parque de diversões. Morros em sequência, saltos nas cristas e um túnel sob a lua crescente.',
+    name: 'Lunar Carnival',
+    description: 'A night race beside an amusement park. Rolling hills, jumps on the crests and a tunnel under the crescent moon.',
     difficulty: 2,
     scale: 1.5,
     points: [
@@ -299,8 +299,8 @@ export const TRACKS = [
   },
   {
     id: 'glacial',
-    name: 'Fenda Glacial',
-    description: 'Mar congelado sob a aurora boreal e um planeta anelado. Salte sobre a fenda, cruze a caverna de gelo e cuidado com as curvas sem barreira.',
+    name: 'Glacial Rift',
+    description: 'A frozen sea under the northern lights and a ringed planet. Jump the rift, cross the ice cave and watch out for unbarriered corners.',
     difficulty: 3,
     scale: 1.3,
     points: [
@@ -343,17 +343,17 @@ export const TRACKS = [
 
 export const QUALITY = {
   low: {
-    label: 'BAIXO', pixelRatio: 1, msaa: 0, bloom: false, bloomStrength: 0, aberration: 0,
+    label: 'LOW', pixelRatio: 1, msaa: 0, bloom: false, bloomStrength: 0, aberration: 0,
     particles: 350, trailPoints: 14, speedLines: 30, cityCount: 140, beams: 6,
     far: 2200, shadowMapSize: 1024, engineParticleRange: 120, radialBlur: false,
   },
   medium: {
-    label: 'MÉDIO', pixelRatio: 1.5, msaa: 2, bloom: true, bloomStrength: 0.595, aberration: 0.0016,
+    label: 'MEDIUM', pixelRatio: 1.5, msaa: 2, bloom: true, bloomStrength: 0.595, aberration: 0.0016,
     particles: 900, trailPoints: 22, speedLines: 60, cityCount: 300, beams: 12,
     far: 2800, shadowMapSize: 1024, engineParticleRange: 220, radialBlur: true,
   },
   high: {
-    label: 'ALTO', pixelRatio: 2, msaa: 4, bloom: true, bloomStrength: 0.85, aberration: 0.002,
+    label: 'HIGH', pixelRatio: 2, msaa: 4, bloom: true, bloomStrength: 0.85, aberration: 0.002,
     particles: 1800, trailPoints: 30, speedLines: 100, cityCount: 480, beams: 18,
     far: 3400, shadowMapSize: 2048, engineParticleRange: 320, radialBlur: true,
   },

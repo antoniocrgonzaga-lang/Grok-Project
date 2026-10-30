@@ -942,3 +942,6 @@ input[type="range"] {
     animation: none;
   }
 }
+
+/* Seletor de idioma na tela inicial */
+.title-lang { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 18px; font-size: 12px; letter-spacing: 0.2em; opacity: 0.9; }

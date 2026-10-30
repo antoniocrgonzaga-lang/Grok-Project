@@ -1,19 +1,9 @@
 import { SHIPS, TRACKS, QUALITY, DIFFICULTY } from './Config.js';
 import { formatTime, cssColor } from './Utils.js';
+import { t, ordinal, setLang, onLangChange, applyTranslations } from './i18n.js';
 
-const STAT_LABELS = [
-  ['speed', 'VELOCIDADE'],
-  ['accel', 'ACELERAÇÃO'],
-  ['handling', 'CONTROLE'],
-  ['energy', 'ENERGIA'],
-  ['boost', 'BOOST'],
-];
-
-const DIFFICULTY_NOTES = {
-  easy: 'Adversários mais lentos, cautelosos nas curvas e com erros frequentes.',
-  normal: 'Adversários competitivos, mas que aliviam nas curvas e erram de vez em quando.',
-  hard: 'Adversários no limite: curvas otimizadas, boost agressivo e poucos erros.',
-};
+// Rótulos traduzidos em tempo de exibição (ver i18n.js).
+const STAT_KEYS = ['speed', 'accel', 'handling', 'energy', 'boost'];
 
 const ROW_GROUPS = '.segmented, .cards';
 
@@ -51,6 +41,7 @@ export class Menus {
     this._bindButtons();
     this._bindOptions();
     this._bindDifficulty();
+    this._bindLanguage();
     this.refreshOptions();
 
     this._onKeyDown = (e) => this._handleKey(e);
@@ -117,10 +108,13 @@ export class Menus {
     this.shipCards = SHIPS.map((ship, index) => {
       const card = el('button', 'card');
       card.style.setProperty('--card-color', cssColor(ship.colors.primary));
-      card.append(el('h3', '', ship.name), el('p', '', ship.tagline));
-      for (const [key, label] of STAT_LABELS) {
+      card.append(el('h3', '', ship.name), el('p', '', t(`ship.${ship.id}.tagline`)));
+      card.querySelector('p').dataset.i18n = `ship.${ship.id}.tagline`;
+      for (const key of STAT_KEYS) {
         const row = el('div', 'stat');
-        row.append(el('span', '', label), pips(ship.ratings[key]));
+        const label = el('span', '', t(`stat.${key}`));
+        label.dataset.i18n = `stat.${key}`;
+        row.append(label, pips(ship.ratings[key]));
         card.append(row);
       }
       card.addEventListener('click', () => {
@@ -139,9 +133,15 @@ export class Menus {
       const card = el('button', 'card');
       card.style.setProperty('--card-color', cssColor(track.theme.edgeRight));
       const row = el('div', 'stat');
-      row.append(el('span', '', 'TRAÇADO'), pips(track.difficulty));
+      const layout = el('span', '', t('track.layout'));
+      layout.dataset.i18n = 'track.layout';
+      row.append(layout, pips(track.difficulty));
       const meta = el('div', 'meta', '');
-      card.append(el('h3', '', track.name), el('p', '', track.description), row, meta);
+      const title = el('h3', '', t(`track.${track.id}.name`));
+      title.dataset.i18n = `track.${track.id}.name`;
+      const desc = el('p', '', t(`track.${track.id}.desc`));
+      desc.dataset.i18n = `track.${track.id}.desc`;
+      card.append(title, desc, row, meta);
       card.addEventListener('click', () => {
         if (this.trackIndex === index) this._action('start');
         else this.selectTrack(index);
@@ -187,7 +187,7 @@ export class Menus {
       const meta = this.trackMeta.get(track.id);
       const length = meta.length ? `${(meta.length / 1000).toFixed(2)} KM` : '—';
       const best = this.settings.bestLap(track.id);
-      meta.node.textContent = `EXTENSÃO ${length}  ·  RECORDE ${best ? formatTime(best) : '—'}`;
+      meta.node.textContent = t('track.meta', { length, best: best ? formatTime(best) : '—' });
     }
   }
 
@@ -256,6 +256,23 @@ export class Menus {
     }
   }
 
+  // ---------- idioma ----------
+
+  // Seletores de idioma (tela inicial e opções). A troca re-renderiza tudo o que está visível.
+  _bindLanguage() {
+    document.querySelectorAll('[data-lang]').forEach((button) => {
+      button.addEventListener('click', () => {
+        setLang(button.dataset.lang);
+        this.events.emit('ui:sound', 'confirm');
+      });
+    });
+    this._offLang = onLangChange(() => {
+      this.refreshOptions();
+      this._refreshTrackMeta();
+    });
+    applyTranslations();
+  }
+
   // ---------- opções ----------
 
   _bindOptions() {
@@ -288,16 +305,16 @@ export class Menus {
     const s = this.settings;
     for (const button of this.qualityButtons) button.classList.toggle('active', button.dataset.quality === s.get('quality'));
     for (const button of this.difficultyButtons) button.classList.toggle('active', button.dataset.difficulty === s.get('difficulty'));
-    this.difficultyNote.textContent = `${DIFFICULTY[s.get('difficulty')].label}: ${DIFFICULTY_NOTES[s.get('difficulty')]}`;
+    this.difficultyNote.textContent = `${t(`difficulty.${s.get('difficulty')}`)}: ${t(`difficulty.note.${s.get('difficulty')}`)}`;
     const toggle = (button, on) => {
       button.setAttribute('aria-pressed', String(on));
-      button.textContent = on ? 'LIGADO' : 'DESLIGADO';
+      button.textContent = t(on ? 'options.on' : 'options.off');
     };
     toggle(this.crtButton, s.get('crt'));
     toggle(this.shadowButton, s.get('shadows'));
     for (const key of Object.keys(this.sliders)) this.sliders[key].value = String(s.get(key));
     const q = QUALITY[s.get('quality')];
-    this.note.textContent = `${q.label}: bloom ${q.bloom ? 'ligado' : 'desligado'}, ${q.particles} partículas, ${q.cityCount} prédios. A densidade do cenário é aplicada ao iniciar a próxima corrida.`;
+    this.note.textContent = t('options.note', { q: t(`quality.${s.get('quality')}`), bloom: t(q.bloom ? 'options.bloomOn' : 'options.bloomOff'), particles: q.particles, city: q.cityCount });
   }
 
   // ---------- resultado ----------
@@ -305,7 +322,7 @@ export class Menus {
   showResults({ trackName, playerRank, rows }) {
     document.getElementById('results-track').textContent = trackName;
     document.getElementById('results-title').textContent =
-      playerRank === 1 ? 'VITÓRIA!' : playerRank <= 3 ? `PÓDIO — ${playerRank}º LUGAR` : `${playerRank}º LUGAR`;
+      playerRank === 1 ? t('results.victory') : t(playerRank <= 3 ? 'results.podium' : 'results.place', { place: ordinal(playerRank) });
     const body = document.getElementById('results-body');
     body.textContent = '';
     for (const row of rows) {
@@ -313,8 +330,8 @@ export class Menus {
       const pilot = el('td');
       const chip = el('span', 'chip');
       chip.style.background = cssColor(row.color);
-      pilot.append(chip, document.createTextNode(row.name));
-      tr.append(el('td', '', `${row.rank}º`), pilot, el('td', '', row.ship), el('td', '', formatTime(row.time)), el('td', '', formatTime(row.bestLap)));
+      pilot.append(chip, document.createTextNode(row.isPlayer ? t('race.you') : row.name));
+      tr.append(el('td', '', ordinal(row.rank)), pilot, el('td', '', row.ship), el('td', '', formatTime(row.time)), el('td', '', formatTime(row.bestLap)));
       body.append(tr);
     }
     this.open('results');
@@ -385,5 +402,6 @@ export class Menus {
 
   dispose() {
     window.removeEventListener('keydown', this._onKeyDown);
+    this._offLang?.();
   }
 }
